@@ -2,6 +2,7 @@ package com.buttini.hrpayroll.services;
 
 import com.buttini.hrpayroll.entities.Payment;
 import com.buttini.hrpayroll.entities.Worker;
+import com.buttini.hrpayroll.feignclientes.WorkerFeignClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -14,16 +15,10 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class PaymentService {
 
-    @Value("${hr-worker.host}")
-    private String workerHost;
-
-    private final RestTemplate restTemplate;
+    private final WorkerFeignClient workerFeignClient;
 
     public Payment getPayment(Long workerId, Integer days) {
-        Map<String, String> uriVariables = new HashMap<>();
-        uriVariables.put("id", ""+workerId);
-
-        Worker worker = restTemplate.getForObject(workerHost + "/worker/{id}", Worker.class, uriVariables);
+        Worker worker = workerFeignClient.findId(workerId).getBody();
         return new Payment(worker.getName(), worker.getDailyIncome(), days);
     }
 
